@@ -9,10 +9,18 @@ class Detect():
 		self.lx = []
 		self.ly = []
 		self.cap = cv2.VideoCapture(0)
+		self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+		self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 		self.lower_red = np.array([-10,100,100])
 		self.upper_red = np.array([10,255,255])
 		self.lower_blue= np.array([78,158,124])
 		self.upper_blue = np.array([138,255,255])
+		self.intrinsic_matrix = np.array([[1454.54545,          0, 320],
+									      [         0, 1357.14286, 240],
+									      [         0,          0,   1]])
+		self.inverse_intrinsic_matrix = np.array([[0.00068750000214843750671,                        0, -0.22000000068750000214],
+											      [                        0, 0.0007368421037119113606, -0.17684210489085872654],
+											      [                        0,                        0,                       1]])
 
 	def find_center(self):
 		cx = Counter(self.lx)
@@ -55,15 +63,31 @@ class Detect():
 			else:
 				self.ly.append(cy)
 			
-			(mean_x, mean_y) = self.find_center()
-			cv2.circle(self.frame, (int(mean_x), int(mean_y)), 10, (1, 277, 254), -1)
-			print("object's (x, y) = ({x}, {y})".format(x = mean_x, y = mean_y))	
+			(self.mean_x, self.mean_y) = self.find_center()
+			cv2.circle(self.frame, (int(self.mean_x), int(self.mean_y)), 10, (1, 277, 254), -1)
+			print("object's (x, y) in pixel = ({x}, {y})".format(x = self.mean_x, y = self.mean_y))	
 
 	def show_result(self):
 		cv2.imshow("frame", self.frame)
-		cv2.imshow("mask", self.mask)
-		cv2.imshow("canny", self.binary_img)
+		#cv2.imshow("mask", self.mask)
+		#cv2.imshow("canny", self.binary_img)
 		cv2.imshow("res", self.res)		
+
+
+	def get_video_size(self):
+		width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+		height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+		print("width is %d, height is %d"%(width, height))
+
+	def object_camera_coordinate(self):
+		image_coordinate = np.array([[self.mean_x],
+		 							 [self.mean_y],
+									 [          1]])
+		self.camera_coordinate = self.inverse_intrinsic_matrix.dot(image_coordinate)
+		print("object's (x, y, z) in camera coordinate = ({x}, {y}, {z})".format(x = self.camera_coordinate[0][0],
+																				 y = self.camera_coordinate[1][0],
+																				 z = self.camera_coordinate[2][0]))
+
 
 
 
@@ -73,6 +97,9 @@ if __name__ == "__main__":
 		d.find_contour()
 		d.bound_contour()
 		d.show_result()
+		if len(d.contours) > 0:
+			d.object_camera_coordinate()
+		#d.get_video_size()
 		if cv2.waitKey(1) & 0xFF == ord('q'):
 			break	
 	d.cap.release()
