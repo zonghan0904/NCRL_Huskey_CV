@@ -15,12 +15,13 @@ class Detect():
 		self.upper_red = np.array([10,255,255])
 		self.lower_blue= np.array([78,158,124])
 		self.upper_blue = np.array([138,255,255])
-		self.intrinsic_matrix = np.array([[1454.54545,          0, 320],
-									      [         0, 1357.14286, 240],
+		self.intrinsic_matrix = np.array([[1118.83636,          0, 320],
+									      [         0, 1043.91429, 240],
 									      [         0,          0,   1]])
-		self.inverse_intrinsic_matrix = np.array([[0.00068750000214843750671,                        0, -0.22000000068750000214],
-											      [                        0, 0.0007368421037119113606, -0.17684210489085872654],
-											      [                        0,                        0,                       1]])
+		try :
+			self.inverse_intrinsic_matrix = np.linalg.inv(self.intrinsic_matrix)
+		except:
+			pass
 
 	def find_center(self):
 		cx = Counter(self.lx)
@@ -48,10 +49,10 @@ class Detect():
 			except:
 				pass
 			'''		
-			(x, y, w, h) = cv2.boundingRect(c)
-			cv2.rectangle(self.frame, (x,y), (x+w, y+h), (0, 255, 0), 2)
-			cx = x + w / 2
-			cy = y + h / 2
+			(x, y, self.w, self.h) = cv2.boundingRect(c)
+			cv2.rectangle(self.frame, (x,y), (x+self.w, y+self.h), (0, 255, 0), 2)
+			cx = x + self.w / 2
+			cy = y + self.h / 2
 			if len(self.lx) >= 30:
 				del self.lx[0]
 				self.lx.append(cx)
@@ -80,6 +81,7 @@ class Detect():
 		print("width is %d, height is %d"%(width, height))
 
 	def object_camera_coordinate(self):
+		'''
 		image_coordinate = np.array([[self.mean_x],
 		 							 [self.mean_y],
 									 [          1]])
@@ -87,9 +89,13 @@ class Detect():
 		print("object's (x, y, z) in camera coordinate = ({x}, {y}, {z})".format(x = self.camera_coordinate[0][0],
 																				 y = self.camera_coordinate[1][0],
 																				 z = self.camera_coordinate[2][0]))
-
-
-
+		'''
+		self.camera_coordinate_x = (self.mean_x - 320) / 1118.83636
+		self.camera_coordinate_y = (self.mean_y - 240) / 1043.91429
+		self.camera_coordinate_z = (1043.91429 / self.h) * 0.084
+		print("object's (x, y, z) in camera coordinate = ({x}, {y}, {z})".format(x = self.camera_coordinate_x,
+																				 y = self.camera_coordinate_y,
+																				 z = self.camera_coordinate_z))
 
 if __name__ == "__main__":
 	d = Detect()
