@@ -15,23 +15,26 @@ class Detect():
 		self.upper_red = np.array([10,255,255])
 		self.lower_blue= np.array([78,158,124])
 		self.upper_blue = np.array([138,255,255])
-		self.intrinsic_matrix = np.array([[1118.83636,          0, 320],
-									      [         0, 1043.91429, 240],
-									      [         0,          0,   1]])
+		self.lower_green = np.array([25, 75, 85])
+		self.upper_green = np.array([50, 220, 255])
+		self.fx = 799.577872
+		self.fy = 794.397569
+		self.cx = 320
+		self.cy = 240
+		self.real_width = 0.06541
+		self.area = 0
+		self.intrinsic_matrix = np.array([[self.fx,       0, self.cx],
+									      [      0, self.fy, self.cy],
+									      [      0,       0,       1]])
 		try :
 			self.inverse_intrinsic_matrix = np.linalg.inv(self.intrinsic_matrix)
 		except:
-			pass
-
-	def find_center(self):
-		cx = Counter(self.lx)
-		cy = Counter(self.ly)
-		return (cx.most_common()[0][0], cy.most_common()[0][0])
+			sys.exit("intrinsic matrix doesn't have a inverse matrix.")
 
 	def find_contour(self):
 		ret, self.frame = self.cap.read()
 		hsv = cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
-		self.mask = cv2.inRange(hsv, self.lower_blue, self.upper_blue)
+		self.mask = cv2.inRange(hsv, self.lower_green, self.upper_green)
 		self.res = cv2.bitwise_and(self.frame, self.frame, mask = self.mask)
 		gray = cv2.cvtColor(self.res, cv2.COLOR_BGR2GRAY)
 		blur = cv2.GaussianBlur(gray, (11, 11), 0)
@@ -40,33 +43,20 @@ class Detect():
 
 	def bound_contour(self):
 		for c in self.contours:
-			#cv2.drawContours(frame, [c], -1, (0,255,0), 3)
-			'''
-			M = cv2.moments(c)
-			try:
-				cx = int(M["m10"]/M["m00"])
-				cy = int(M["m01"]/M["m00"])
-			except:
-				pass
-			'''		
-			(x, y, self.w, self.h) = cv2.boundingRect(c)
+			area = cv2.contourArea(c)
+			if area > self.area:
+				self.area = area
+				self.contour = c
+
+		if len(self.contours) > 0: 
+			(x, y, self.w, self.h) = cv2.boundingRect(self.contour)
 			cv2.rectangle(self.frame, (x,y), (x+self.w, y+self.h), (0, 255, 0), 2)
-			cx = x + self.w / 2
-			cy = y + self.h / 2
-			if len(self.lx) >= 30:
-				del self.lx[0]
-				self.lx.append(cx)
-			else:
-				self.lx.append(cy)
-			if len(self.ly) >= 30:
-				del self.ly[0]
-				self.ly.append(cy)
-			else:
-				self.ly.append(cy)
-			
-			(self.mean_x, self.mean_y) = self.find_center()
-			cv2.circle(self.frame, (int(self.mean_x), int(self.mean_y)), 10, (1, 277, 254), -1)
-			print("object's (x, y) in pixel = ({x}, {y})".format(x = self.mean_x, y = self.mean_y))	
+			self.cx = x + self.w / 2
+			self.cy = y + self.h / 2
+			cv2.circle(self.frame, (int(self.cx), int(self.cy)), 10, (1, 277, 254), -1)
+			print("object's (x, y) in pixel = ({x}, {y})".format(x = self.cx, y = self.cy))	
+
+		self.area = 0
 
 	def show_result(self):
 		cv2.imshow("frame", self.frame)
@@ -81,18 +71,9 @@ class Detect():
 		print("width is %d, height is %d"%(width, height))
 
 	def object_camera_coordinate(self):
-		'''
-		image_coordinate = np.array([[self.mean_x],
-		 							 [self.mean_y],
-									 [          1]])
-		self.camera_coordinate = self.inverse_intrinsic_matrix.dot(image_coordinate)
-		print("object's (x, y, z) in camera coordinate = ({x}, {y}, {z})".format(x = self.camera_coordinate[0][0],
-																				 y = self.camera_coordinate[1][0],
-																				 z = self.camera_coordinate[2][0]))
-		'''
-		self.camera_coordinate_x = (self.mean_x - 320) / 1118.83636
-		self.camera_coordinate_y = (self.mean_y - 240) / 1043.91429
-		self.camera_coordinate_z = (1043.91429 / self.h) * 0.084
+		self.camera_coordinate_x = (self.cx - 320) / self.fx
+		self.camera_coordinate_y = (self.cy - 240) / self.fy
+		self.camera_coordinate_z = (self.fx / self.w) * self.real_width
 		print("object's (x, y, z) in camera coordinate = ({x}, {y}, {z})".format(x = self.camera_coordinate_x,
 																				 y = self.camera_coordinate_y,
 																				 z = self.camera_coordinate_z))

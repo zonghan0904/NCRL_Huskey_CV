@@ -1,0 +1,19 @@
+real (m):
+	width   : 0.033
+	height  : 0.084
+	distance: 0.6582
+
+real (inch):
+	width   : 1.2992126
+	height  : 3.30708661
+	distance: 25.8740157
+
+image pixel:
+	width   : 48
+	height  : 114
+
+fx / 0.6582 =  48 / 0.033
+fy / 0.6582 = 114 / 0.084
+
+fx  = 957.381818
+fy  = 893.271429

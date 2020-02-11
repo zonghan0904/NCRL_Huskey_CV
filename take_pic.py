@@ -9,8 +9,10 @@ ret, frame = cap.read()
 while 1:
     cv2.imshow("img1", frame)
     if (cv2.waitKey(1) & 0xFF == ord('y')):
-        cv2.imwrite("images/pic1.png", frame)
+        cv2.imwrite("images/pic2.png", frame)
         cv2.destroyAllWindows()
         break
+    else:
+        ret, frame = cap.read()
 
 cap.release()
