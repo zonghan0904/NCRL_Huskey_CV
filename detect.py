@@ -16,6 +16,8 @@ class Detect():
 		self.cap = cv2.VideoCapture(0)
 		self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 		self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+		self.count1 = 0
+		self.count2 = 0
 
 		#################### bounding object configuration ####################
 		self.lower_red = np.array([-10,100,100])
@@ -106,6 +108,12 @@ class Detect():
 		self.data = self.object_camera_coordinate()
 		self.pub.publish(self.data)
 
+	def FPS_estimator(self):
+		self.count1 = self.count2
+		self.count2 = cv2.getTickCount()
+		t = (self.count2 - self.count1) / cv2.getTickFrequency()
+		print("FPS : %d" %(1 / t))
+
 if __name__ == "__main__":
 	d = Detect()
 	while not rospy.is_shutdown():
@@ -117,5 +125,6 @@ if __name__ == "__main__":
 		#d.get_video_size()
 		if cv2.waitKey(1) & 0xFF == ord('q'):
 			break	
+		d.FPS_estimator()
 	d.cap.release()
 	cv2.destroyAllWindows()	
