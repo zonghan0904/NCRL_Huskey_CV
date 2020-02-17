@@ -93,9 +93,9 @@ class Detect():
 
 	def object_camera_coordinate(self):
 		# calculate the camera coordinate by triangle similarity theorem
-		camera_coordinate_x = (self.x - 320) / self.fx
-		camera_coordinate_y = (self.y - 240) / self.fy
 		camera_coordinate_z = (self.fx / self.w) * self.object_real_width
+		camera_coordinate_x = (self.x - self.cx) * camera_coordinate_z / self.fx
+		camera_coordinate_y = (self.y - self.cy) * camera_coordinate_z / self.fy
 
 		# record position information
 		data = Point()
