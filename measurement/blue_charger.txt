@@ -1,3 +1,5 @@
+640 x 480
+
 real (m):
 	width   : 0.033
 	height  : 0.084
