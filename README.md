@@ -14,4 +14,4 @@
 
 * calculate the object's 3D coordinate & publish the object's position to specific topic.
 
-![position_pic](https://user-images.githubusercontent.com/40656204/74320379-74aded00-4dbb-11ea-8372-ba529b81b950.png)
+![position_pic](https://user-images.githubusercontent.com/40656204/74643233-57a85e00-51af-11ea-9a7f-9ad598a2cd1d.png)
