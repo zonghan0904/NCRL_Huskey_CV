@@ -28,6 +28,7 @@ class Detect():
 		self.lower_green = np.array([25, 75, 85])
 		self.upper_green = np.array([50, 220, 255])
 		self.contour_area = 0
+		self.kernel = np.ones((9,9), np.uint8)
 
 		#################### camera's intrinsic parameter ####################
 		self.fx = 799.577872
@@ -48,9 +49,10 @@ class Detect():
 		ret, self.frame = self.cap.read()
 		hsv = cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
 		self.mask = cv2.inRange(hsv, self.lower_green, self.upper_green)
-		self.res = cv2.bitwise_and(self.frame, self.frame, mask = self.mask)
+		self.denoise_mask = cv2.morphologyEx(self.mask, cv2.MORPH_OPEN, self.kernel)
+		self.res = cv2.bitwise_and(self.frame, self.frame, mask = self.denoise_mask)
 		gray = cv2.cvtColor(self.res, cv2.COLOR_BGR2GRAY)
-		blur = cv2.GaussianBlur(gray, (11, 11), 0)
+		blur = cv2.GaussianBlur(gray, (5, 5), 0)
 		self.binary_img = cv2.Canny(blur, 20, 160)
 		self.contours = cv2.findContours(self.binary_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]	
 
@@ -77,6 +79,7 @@ class Detect():
 	def show_result(self):
 		cv2.imshow("frame", self.frame)
 		#cv2.imshow("mask", self.mask)
+		#cv2.imshow("denoise_mask", self.denoise_mask)
 		#cv2.imshow("canny", self.binary_img)
 		#cv2.imshow("res", self.res)	
 
