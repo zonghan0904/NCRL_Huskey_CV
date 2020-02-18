@@ -4,6 +4,7 @@ import sys
 sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import numpy as np
 import cv2
+import time
 
 class Detect():
 	def __init__(self):
@@ -16,8 +17,8 @@ class Detect():
 		self.cap = cv2.VideoCapture(0)
 		self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 		self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-		self.count1 = 0
-		self.count2 = 0
+		self.time1 = time.time()
+		self.time2 = time.time()
 
 		#################### bounding object configuration ####################
 		self.lower_red = np.array([-10,100,100])
@@ -104,27 +105,33 @@ class Detect():
 		data.z = camera_coordinate_z
 		return data
 
+	def object_detect(self):
+		self.find_contour()
+		self.bound_contour()
+		self.show_result()
+
 	def coordinate_publisher(self):
 		self.data = self.object_camera_coordinate()
 		self.pub.publish(self.data)
 
 	def FPS_estimator(self):
-		self.count1 = self.count2
-		self.count2 = cv2.getTickCount()
-		t = (self.count2 - self.count1) / cv2.getTickFrequency()
-		print("FPS : %d" %(1 / t))
+		self.time1 = self.time2
+		self.time2 = time.time()
+		duration = self.time2 - self.time1
+		print("FPS : %d" %(1 / duration))
+
+	def end(self):
+		self.cap.release()
 
 if __name__ == "__main__":
 	d = Detect()
 	while not rospy.is_shutdown():
-		d.find_contour()
-		d.bound_contour()
-		d.show_result()
+		d.object_detect()
 		if d.check_object():
 			d.coordinate_publisher()
 		#d.get_video_size()
+		#d.FPS_estimator()
 		if cv2.waitKey(1) & 0xFF == ord('q'):
 			break	
-		d.FPS_estimator()
-	d.cap.release()
+	d.end()
 	cv2.destroyAllWindows()	
