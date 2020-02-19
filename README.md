@@ -1,9 +1,25 @@
 # NCRL_Huskey_CV
 
 ## Goal
-* detect the green object.
-* calculate the object's 3D coordinate.
-* publish the object's position to specific topic.
+* detect the green object (tennis).
+* calculate the object's 3D coordinate with reference to camera.
+* publish the object's position information to specific topic.
+
+---
+
+## Requirement
+* Python3
+* `pip install rospy`
+* `pip install numpy`
+* `pip install opencv-python`
+* `pip install opencv-contrib-python`
+
+---
+
+## Step
+1. `$ roscore`
+2. `$ python detect.py`
+3. `$ rostopic echo /camera_coordinate`
 
 ---
 
@@ -16,6 +32,7 @@
 
 ![position_pic](https://user-images.githubusercontent.com/40656204/74643233-57a85e00-51af-11ea-9a7f-9ad598a2cd1d.png)
 
+---
 
 ## optimization
 * noise reduction.
