@@ -9,10 +9,7 @@
 
 ## Requirement
 * Python3
-* `pip install rospy`
-* `pip install numpy`
-* `pip install opencv-python`
-* `pip install opencv-contrib-python`
+* `pip install -r requirements.txt`
 
 ---
 

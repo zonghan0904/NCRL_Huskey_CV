@@ -1,0 +1,5 @@
+rospy
+rospkg
+numpy
+opencv-python
+opencv-contrib-python
